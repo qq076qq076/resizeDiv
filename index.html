@@ -10,6 +10,7 @@
         background: black;
         padding: 5px;
         box-sizing: border-box;
+        position: absolute;
     }
 
     .resize div {
@@ -29,8 +30,8 @@
     <script>
         let resizeDom = document.querySelector('.resize');
         let innerDon = document.querySelector('.resize div');
-        let lastX = 0;
-        let lastY = 0;
+        let startX = 0;
+        let startY = 0;
         let style;
         let boundary = 15;
 
@@ -44,6 +45,7 @@
             let height = this.offsetHeight;
             let cursorX = Math.min(Math.max(e.offsetX, 0), width);
             let cursorY = Math.min(Math.max(e.offsetY, 0), height);
+            let bindFunc;
             if (cursorX < boundary) {
                 // 左
                 if (cursorY < boundary) {
@@ -75,36 +77,86 @@
                     this.style.cursor = 'w-resize';
                 }
             } else {
-                //上下
-                style = 7;
+                //上 / 下
+                style = (cursorY < boundary) ? 7 : 8;
                 this.style.cursor = 's-resize';
             }
+            //點擊之後 開始變更大小
             resizeDom.addEventListener('mousedown', dragStart);
+            //取消點擊狀態 復原監聽器
             document.addEventListener('mouseup', dragStop);
         }
 
         function dragStart(e) {
+            //計算初始位置
+            startX = e.clientX - e.offsetLeft;
+            startY = e.clientY - e.offsetHeight;
+            //讓內部元素不會被選取
+            innerDon.style.userSelect = 'none';
+            //取消變更滑鼠圖示
+            resizeDom.removeEventListener('mouseover', setCursor);
+            //監聽滑鼠移動 改變大小
             document.addEventListener('mousemove', drag);
         }
 
         function drag(e) {
             //計算移動量
-            let x = lastX ? e.clientX - lastX : 0;
-            let y = lastY ? e.clientY - lastY : 0;
-            let width = resizeDom.offsetWidth;
-            let height = resizeDom.offsetHeight;
+            let x = e.clientX - startX;
+            let y = e.clientY - startY;
+            let domWidth = resizeDom.offsetWidth;
+            let domHeight = resizeDom.offsetHeight;
+            let domTop = resizeDom.offsetTop;
+            let domLeft = resizeDom.offsetLeft;
             //移動量加上原本的寬度
-            resizeDom.style.width = (width + x) + 'px';
-            resizeDom.style.height = (height + y) + 'px';
+            switch (style) {
+                case 1:
+                    resizeDom.style.top = (domTop + y) + 'px';
+                    resizeDom.style.height = (domHeight - y) + 'px';
+                    resizeDom.style.left = (domLeft + x) + 'px';
+                    resizeDom.style.width = (domWidth - x) + 'px';
+                    break;
+                case 2:
+                    resizeDom.style.height = (domHeight + y) + 'px';
+                    resizeDom.style.left = (domLeft + x) + 'px';
+                    resizeDom.style.width = (domWidth - x) + 'px';
+                    break;
+                case 3:
+                    resizeDom.style.left = (domLeft + x) + 'px';
+                    resizeDom.style.width = (domWidth - x) + 'px';
+                    break;
+                case 4:
+                    resizeDom.style.top = (domTop + y) + 'px';
+                    resizeDom.style.height = (domHeight - y) + 'px';
+                    resizeDom.style.width = (domWidth + x) + 'px';
+                    break;
+                case 5:
+                    resizeDom.style.width = (domWidth + x) + 'px';
+                    resizeDom.style.height = (domHeight + y) + 'px';
+                    break;
+                case 6:
+                    resizeDom.style.width = (domWidth + x) + 'px';
+                    break;
+                case 7:
+                    resizeDom.style.top = (domTop + y) + 'px';
+                    resizeDom.style.height = (domHeight - y) + 'px';
+                    break;
+                case 8:
+                    resizeDom.style.height = (domHeight + y) + 'px';
+                    break;
+            }
             //設定上一個滑鼠移動點
-            lastX = e.clientX;
-            lastY = e.clientY;
+            startX = e.clientX;
+            startY = e.clientY;
         }
 
-        function dragStop() {
+        function dragStop(e) {
+            startX = 0;
+            startY = 0;
+            innerDon.style.userSelect = 'auto';
             resizeDom.removeEventListener('mousedown', dragStart);
             document.removeEventListener('mousemove', drag);
             document.removeEventListener('mouseup', dragStop);
+            resizeDom.addEventListener('mouseover', setCursor);
         }
 
         function setCursorInit(e) {
