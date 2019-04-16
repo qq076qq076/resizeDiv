@@ -1,0 +1,84 @@
+<html>
+
+<head>
+    <title>拖曳改變DIV大小</title>
+</head>
+<style>
+    .resize {
+        width: 200px;
+        height: 200px;
+        background: black;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+
+    .resize div {
+        background: white;
+        height: 100%;
+        width: 100%;
+    }
+</style>
+
+<body>
+    <h1>拖曳改變div大小</h1>
+    <div class="resize">
+        <div>
+            改變這個大小
+        </div>
+    </div>
+    <script>
+        let resizeDom = document.querySelector('.resize');
+        let innerDon = document.querySelector('.resize div');
+        let startX = 0;
+        let startY = 0;
+        let boundary = 15;
+
+        resizeDom.addEventListener('mouseover', setCursor);
+        resizeDom.addEventListener('mouseleave', setCursorInit);
+        innerDon.addEventListener('mouseenter', setCursorInit)
+
+        function setCursor(e) {
+            // 計算要顯示哪個滑鼠圖示
+            let width = this.offsetWidth;
+            let height = this.offsetHeight;
+            let cursorX = Math.min(Math.max(e.offsetX, 0), width);
+            let cursorY = Math.min(Math.max(e.offsetY, 0), height);
+
+            if (cursorX < boundary) {
+                // 左
+                if (cursorY < boundary) {
+                    //左上
+                    this.style.cursor = 'nw-resize';
+                } else if (height - cursorY < boundary) {
+                    //左下
+                    this.style.cursor = 'ne-resize';
+                } else {
+                    //左
+                    this.style.cursor = 'w-resize';
+                }
+            } else if (width - cursorX < boundary) {
+                //右
+                if (cursorY < boundary) {
+                    //右上
+                    this.style.cursor = 'ne-resize';
+                } else if (height - cursorY < boundary) {
+                    //右下
+                    this.style.cursor = 'nw-resize';
+                } else {
+                    this.style.cursor = 'w-resize';
+                }
+            } else {
+                //上下
+                this.style.cursor = 's-resize';
+            }
+
+        }
+
+        function setCursorInit(e) {
+            e.stopPropagation();
+            this.style.cursor = 'default';
+        }
+    </script>
+</body>
+
+</html>
