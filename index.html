@@ -29,8 +29,9 @@
     <script>
         let resizeDom = document.querySelector('.resize');
         let innerDon = document.querySelector('.resize div');
-        let startX = 0;
-        let startY = 0;
+        let lastX = 0;
+        let lastY = 0;
+        let style;
         let boundary = 15;
 
         resizeDom.addEventListener('mouseover', setCursor);
@@ -43,35 +44,67 @@
             let height = this.offsetHeight;
             let cursorX = Math.min(Math.max(e.offsetX, 0), width);
             let cursorY = Math.min(Math.max(e.offsetY, 0), height);
-
             if (cursorX < boundary) {
                 // 左
                 if (cursorY < boundary) {
                     //左上
+                    style = 1;
                     this.style.cursor = 'nw-resize';
                 } else if (height - cursorY < boundary) {
                     //左下
+                    style = 2;
                     this.style.cursor = 'ne-resize';
                 } else {
                     //左
+                    style = 3;
                     this.style.cursor = 'w-resize';
                 }
             } else if (width - cursorX < boundary) {
                 //右
                 if (cursorY < boundary) {
                     //右上
+                    style = 4;
                     this.style.cursor = 'ne-resize';
                 } else if (height - cursorY < boundary) {
                     //右下
+                    style = 5;
                     this.style.cursor = 'nw-resize';
                 } else {
+                    //右
+                    style = 6;
                     this.style.cursor = 'w-resize';
                 }
             } else {
                 //上下
+                style = 7;
                 this.style.cursor = 's-resize';
             }
+            resizeDom.addEventListener('mousedown', dragStart);
+            document.addEventListener('mouseup', dragStop);
+        }
 
+        function dragStart(e) {
+            document.addEventListener('mousemove', drag);
+        }
+
+        function drag(e) {
+            //計算移動量
+            let x = lastX ? e.clientX - lastX : 0;
+            let y = lastY ? e.clientY - lastY : 0;
+            let width = resizeDom.offsetWidth;
+            let height = resizeDom.offsetHeight;
+            //移動量加上原本的寬度
+            resizeDom.style.width = (width + x) + 'px';
+            resizeDom.style.height = (height + y) + 'px';
+            //設定上一個滑鼠移動點
+            lastX = e.clientX;
+            lastY = e.clientY;
+        }
+
+        function dragStop() {
+            resizeDom.removeEventListener('mousedown', dragStart);
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', dragStop);
         }
 
         function setCursorInit(e) {
